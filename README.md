@@ -178,6 +178,17 @@ Quem não tiver `giro360` mostra só a galeria de fotos com zoom.
 
 **Página de teste:** com `npm run dev`, abra http://localhost:3000/dev/visualizador para testar a galeria, o zoom e o 360°. Ela usa uma sequência de demonstração gerada por computador e não existe no site publicado.
 
+### Visualização 3D (opcional por produto)
+
+A visualização 3D é um **modelo tridimensional** do produto, desenhado no navegador (Three.js/WebGL). O cliente gira em qualquer direção, inclusive vê de cima e de baixo, e aproxima. Não precisa de fotos.
+
+- **Para ativar num produto:** acrescente `"modelo3d": "caneca"` no `catalogo.json` e rode `npm run catalogo:importar`.
+- **Para desativar:** apague a linha e rode o importador.
+- **Modelos disponíveis hoje:** `caneca` (caneca branca de cerâmica, ~325 ml). Xícara, taça, garrafa e azulejo podem ser acrescentados em `src/components/model-3d-viewer.tsx`.
+- **Desempenho:** a biblioteca 3D só é baixada quando o cliente toca na miniatura "3D". A animação pausa quando o visualizador sai da tela.
+- **Navegador sem suporte a 3D** (raro): aparece uma mensagem e as fotos continuam funcionando.
+- **Arte do cliente aplicada no 3D:** etapa futura, separada.
+
 ### Renovação do cache
 
 O catálogo fica em cache para a navegação ser rápida. Depois de importar:

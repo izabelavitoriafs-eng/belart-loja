@@ -13,6 +13,7 @@
 //     (01.webp, 02.webp…). Mínimo de 8 fotos; o ideal é 24 a 36.
 //     Fotografe girando o produto no sentido horário (visto de cima); se girou
 //     ao contrário, use "giro360Invertido": true.
+//   - "modelo3d" (opcional): ativa a visualização 3D, ex.: "caneca".
 //   - Produtos que NÃO estão no arquivo não são apagados nem alterados.
 //   - O arquivo inteiro é conferido antes: se houver qualquer erro, nada é gravado.
 //
@@ -33,6 +34,7 @@ const CATALOG_FILE = join("prisma", "catalogo.json");
 const IMAGES_DIR = join("public", "produtos");
 const TYPES: CustomizationType[] = ["TEXT", "LONG_TEXT", "SELECT", "IMAGE_LINK"];
 const MIN_SPIN_FRAMES = 8;
+const MODELOS_3D = ["caneca"]; // mesmos nomes de src/lib/catalog.ts
 const FRAME_EXTENSIONS = /\.(webp|jpe?g|png|avif)$/i;
 
 type ImagemEntrada = string | { arquivo: string; alt?: string };
@@ -50,6 +52,8 @@ type ProdutoEntrada = {
   giro360?: string | string[];
   /** true se a sequência foi fotografada girando no sentido anti-horário (inverte a ordem). */
   giro360Invertido?: boolean;
+  /** Visualização 3D: nome do modelo (hoje: "caneca"). */
+  modelo3d?: string;
   variacoes?: { nome: string; opcoes: { valor: string; acrescimo?: number; disponivel?: boolean }[] }[];
   personalizacoes?: {
     rotulo: string;
@@ -116,6 +120,9 @@ async function validate(list: ProdutoEntrada[], categorySlugs: Set<string>) {
       if (Math.min(meta.width ?? 0, meta.height ?? 0) < 800)
         warnings.push(`${where}: ${file} tem ${meta.width}×${meta.height}px — pode ficar pixelizada.`);
     }
+    if (p.modelo3d && !MODELOS_3D.includes(p.modelo3d))
+      errors.push(`${where}: modelo3d "${p.modelo3d}" não existe. Disponíveis: ${MODELOS_3D.join(", ")}.`);
+
     if (JSON.stringify(p).includes("PREENCHER"))
       errors.push(`${where}: ainda há campos com "PREENCHER". Substitua pelos dados reais do produto.`);
 
@@ -207,6 +214,7 @@ async function main() {
           featured: p.destaque ?? false,
           bestseller: p.maisVendido ?? false,
           productionTime: p.prazoProducao?.trim() || null,
+          model3d: p.modelo3d || null,
         };
         const product = await tx.product.upsert({
           where: { slug: p.slug },

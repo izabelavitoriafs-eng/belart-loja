@@ -78,7 +78,7 @@ export default async function ProductPage({ params }: Props) {
         </nav>
 
         <div className="mt-6 grid gap-10 md:grid-cols-2 md:gap-12 lg:gap-16">
-          <ProductGallery name={product.name} gallery={product.gallery} spin={product.spin} />
+          <ProductGallery name={product.name} gallery={product.gallery} spin={product.spin} model3d={product.model3d} />
 
           <div>
             <p className="text-sm font-semibold text-ameixa-700">{product.category.name}</p>

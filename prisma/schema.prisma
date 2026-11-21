@@ -37,6 +37,7 @@ model Product {
   featured       Boolean         @default(false) // aparece em "Destaques" na página inicial
   bestseller     Boolean         @default(false) // aparece em "Mais vendidos"
   productionTime String? // texto livre, ex.: "3 a 5 dias úteis"
+  model3d        String? // modelo 3D do produto (ex.: "caneca"); vazio = sem visualização 3D
   images         ProductImage[]
   options        ProductOption[]
   customizations Customization[]

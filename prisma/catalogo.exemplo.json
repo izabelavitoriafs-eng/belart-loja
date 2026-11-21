@@ -18,6 +18,7 @@
         "canecas/caneca-exemplo-2.webp"
       ],
       "giro360": "canecas/caneca-exemplo-360",
+      "modelo3d": "caneca",
       "variacoes": [
         {
           "nome": "Cor",

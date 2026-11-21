@@ -7,10 +7,12 @@ import { createPortal } from "react-dom";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { PinchZoom } from "@/components/pinch-zoom";
 import { SpinViewer } from "@/components/spin-viewer";
+import { Model3DViewer, type Model3DKind } from "@/components/model-3d-viewer";
 
 export type GalleryItem =
   | { type: "image"; key: string; src: string; alt: string }
-  | { type: "spin"; key: string; frames: string[]; alt: string };
+  | { type: "spin"; key: string; frames: string[]; alt: string }
+  | { type: "model3d"; key: string; model: Model3DKind; poster: string | null; alt: string };
 
 type Props = {
   items: GalleryItem[];
@@ -57,7 +59,11 @@ export function Lightbox({ items, index, onIndexChange, onClose }: Props) {
     >
       <div className="flex items-center justify-between gap-4 px-4 py-3">
         <p className="text-sm text-lilas-200" aria-live="polite">
-          {item.type === "spin" ? "Visualização 360°" : `Foto ${index + 1} de ${items.length}`}
+          {item.type === "spin"
+            ? "Visualização 360°"
+            : item.type === "model3d"
+              ? "Visualização 3D"
+              : `${index + 1} de ${items.length}`}
         </p>
         <button
           ref={closeRef}
@@ -74,8 +80,10 @@ export function Lightbox({ items, index, onIndexChange, onClose }: Props) {
         <div className="h-full rounded-3xl bg-white">
           {item.type === "image" ? (
             <PinchZoom src={item.src} alt={item.alt} onSwipe={go} />
-          ) : (
+          ) : item.type === "spin" ? (
             <SpinViewer frames={item.frames} alt={item.alt} />
+          ) : (
+            <Model3DViewer kind={item.model} alt={item.alt} />
           )}
         </div>
 
@@ -127,8 +135,8 @@ export function Thumb({
   onClick: () => void;
   dark?: boolean;
 }) {
-  const src = item.type === "image" ? item.src : item.frames[0];
-  const label = item.type === "spin" ? "Ver em 360°" : item.alt;
+  const src = item.type === "image" ? item.src : item.type === "spin" ? item.frames[0] : item.poster;
+  const label = item.type === "spin" ? "Ver em 360°" : item.type === "model3d" ? "Ver em 3D" : item.alt;
   return (
     <button
       type="button"
@@ -139,10 +147,10 @@ export function Thumb({
         active ? "ring-sol-500" : dark ? "ring-white/20 hover:ring-white/50" : "ring-lilas-200 hover:ring-ameixa-600/50"
       }`}
     >
-      <Image src={src} alt="" fill sizes="80px" className="object-contain" />
-      {item.type === "spin" && (
+      {src && <Image src={src} alt="" fill sizes="80px" className="object-contain" />}
+      {item.type !== "image" && (
         <span className="absolute inset-0 flex items-center justify-center bg-ameixa-900/55 font-display text-base font-extrabold text-white">
-          360°
+          {item.type === "spin" ? "360°" : "3D"}
         </span>
       )}
     </button>

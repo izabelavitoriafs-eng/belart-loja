@@ -1,4 +1,4 @@
-// Página de TESTE dos componentes de produto (galeria, tela cheia com zoom e 360°).
+// Página de TESTE dos componentes de produto (galeria, tela cheia com zoom, 3D e 360°).
 // Só existe em desenvolvimento (npm run dev); no site publicado responde 404.
 //
 // - Fotos: fotos de caneca enviadas para teste (public/produtos/canecas).
@@ -34,7 +34,7 @@ export default function VisualizadorTeste() {
       </p>
 
       <div className="mt-8 grid gap-10 md:grid-cols-2 md:gap-12">
-        <ProductGallery name="Caneca branca personalizada" gallery={gallery} spin={spin} />
+        <ProductGallery name="Caneca branca personalizada" gallery={gallery} spin={spin} model3d="caneca" />
 
         <div>
           <h1 className="text-4xl font-extrabold text-ameixa-900">Caneca branca personalizada</h1>

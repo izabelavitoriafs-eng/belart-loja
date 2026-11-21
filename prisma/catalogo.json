@@ -9,6 +9,7 @@
       "disponivel": true,
       "destaque": true,
       "maisVendido": false,
+      "modelo3d": "caneca",
       "imagens": [
         {
           "arquivo": "canecas/caneca-branca-1.webp",

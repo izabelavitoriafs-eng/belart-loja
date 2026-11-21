@@ -60,8 +60,14 @@ export type CustomizationData = {
   priceDelta: number;
 };
 
+/** Modelos 3D disponíveis (veja src/components/model-3d-viewer.tsx). */
+export const MODELOS_3D = ["caneca"] as const;
+export type Model3D = (typeof MODELOS_3D)[number];
+
 export type ProductDetail = ProductCardData & {
   productionTime: string | null;
+  /** Modelo para a visualização 3D, ou null se o produto não tiver. */
+  model3d: Model3D | null;
   /** Fotos da galeria, na ordem (a primeira é a capa). */
   gallery: ProductImageData[];
   /** Quadros da visualização 360°, na ordem de rotação (vazio se o produto não tiver). */
@@ -146,6 +152,7 @@ export const getProductBySlug = (slug: string) =>
       category: p.category,
       image: gallery[0] ? { url: gallery[0].url, alt: gallery[0].alt } : null,
       productionTime: p.productionTime,
+      model3d: (MODELOS_3D as readonly string[]).includes(p.model3d ?? "") ? (p.model3d as Model3D) : null,
       gallery,
       spin: spin.length >= MIN_SPIN_FRAMES ? spin : [],
       options: p.options.map((o) => ({
