@@ -5,17 +5,22 @@
 // Regras:
 //   - Cada produto é identificado pelo "slug". Se já existir, é ATUALIZADO;
 //     se não existir, é CRIADO.
-//   - Fotos, variações e personalizações do produto são substituídas pelo que
-//     estiver no arquivo (a ordem das fotos no arquivo é a ordem no site; a
-//     primeira é a capa).
+//   - Fotos, giro 360°, variações e personalizações do produto são substituídos
+//     pelo que estiver no arquivo (a ordem das fotos no arquivo é a ordem no
+//     site; a primeira é a capa).
+//   - "giro360" (opcional): pasta com a sequência de fotos do giro, ex.:
+//     "canecas/caneca-floral-360". As fotos são usadas em ordem alfabética
+//     (01.webp, 02.webp…). Mínimo de 8 fotos; o ideal é 24 a 36.
+//     Fotografe girando o produto no sentido horário (visto de cima); se girou
+//     ao contrário, use "giro360Invertido": true.
 //   - Produtos que NÃO estão no arquivo não são apagados nem alterados.
 //   - O arquivo inteiro é conferido antes: se houver qualquer erro, nada é gravado.
 //
 // Este importador é a forma de cadastrar pelo VS Code até o painel
 // administrativo ficar pronto (etapa 3). O painel grava nas mesmas tabelas.
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { PrismaClient, type CustomizationType } from "@prisma/client";
+import { PrismaClient, type CustomizationType, type ImageKind } from "@prisma/client";
 import sharp from "sharp";
 
 try {
@@ -27,6 +32,8 @@ try {
 const CATALOG_FILE = join("prisma", "catalogo.json");
 const IMAGES_DIR = join("public", "produtos");
 const TYPES: CustomizationType[] = ["TEXT", "LONG_TEXT", "SELECT", "IMAGE_LINK"];
+const MIN_SPIN_FRAMES = 8;
+const FRAME_EXTENSIONS = /\.(webp|jpe?g|png|avif)$/i;
 
 type ImagemEntrada = string | { arquivo: string; alt?: string };
 type ProdutoEntrada = {
@@ -40,6 +47,9 @@ type ProdutoEntrada = {
   maisVendido?: boolean;
   prazoProducao?: string;
   imagens?: ImagemEntrada[];
+  giro360?: string | string[];
+  /** true se a sequência foi fotografada girando no sentido anti-horário (inverte a ordem). */
+  giro360Invertido?: boolean;
   variacoes?: { nome: string; opcoes: { valor: string; acrescimo?: number; disponivel?: boolean }[] }[];
   personalizacoes?: {
     rotulo: string;
@@ -53,6 +63,24 @@ type ProdutoEntrada = {
 
 // Usa a conexão direta (DIRECT_URL) quando existir: mais adequada para gravações em lote.
 const prisma = new PrismaClient({ datasourceUrl: process.env.DIRECT_URL ?? process.env.DATABASE_URL });
+
+/** Remove "/produtos/" do começo, se a pessoa tiver escrito. */
+function relativePath(file: string) {
+  return file.replace(/^\/?(produtos\/)?/, "");
+}
+
+/** Lista os quadros do giro 360°: uma pasta (em ordem alfabética/numérica) ou uma lista de arquivos. */
+function spinFrames(giro: string | string[] | undefined): string[] {
+  if (!giro) return [];
+  if (Array.isArray(giro)) return giro.map(relativePath);
+  const folder = relativePath(giro).replace(/\/$/, "");
+  const dir = join(IMAGES_DIR, folder);
+  if (!existsSync(dir) || !statSync(dir).isDirectory()) return [];
+  return readdirSync(dir)
+    .filter((f) => FRAME_EXTENSIONS.test(f))
+    .sort((a, b) => a.localeCompare(b, "pt-BR", { numeric: true }))
+    .map((f) => `${folder}/${f}`);
+}
 
 function imageUrl(file: string) {
   return /^https?:\/\//.test(file) ? file : `/produtos/${file.replace(/^\/?(produtos\/)?/, "")}`;
@@ -88,6 +116,33 @@ async function validate(list: ProdutoEntrada[], categorySlugs: Set<string>) {
       if (Math.min(meta.width ?? 0, meta.height ?? 0) < 800)
         warnings.push(`${where}: ${file} tem ${meta.width}×${meta.height}px — pode ficar pixelizada.`);
     }
+    if (JSON.stringify(p).includes("PREENCHER"))
+      errors.push(`${where}: ainda há campos com "PREENCHER". Substitua pelos dados reais do produto.`);
+
+    if (p.giro360) {
+      const frames = spinFrames(p.giro360);
+      if (frames.length === 0) {
+        errors.push(`${where}: giro360 "${p.giro360}" não encontrado ou sem fotos em ${IMAGES_DIR}.`);
+      } else if (frames.length < MIN_SPIN_FRAMES) {
+        errors.push(`${where}: o giro 360° tem ${frames.length} foto(s); são necessárias pelo menos ${MIN_SPIN_FRAMES} (ideal: 24 a 36).`);
+      } else {
+        if (frames.length < 16)
+          warnings.push(`${where}: giro 360° com ${frames.length} fotos fica "aos pulos"; 24 a 36 fotos deixam o giro suave.`);
+        const sizes = new Set<string>();
+        for (const f of frames) {
+          const path = join(IMAGES_DIR, f);
+          if (!existsSync(path)) {
+            errors.push(`${where}: quadro do 360° não encontrado: ${path}`);
+            continue;
+          }
+          const meta = await sharp(path).metadata();
+          sizes.add(`${meta.width}×${meta.height}`);
+        }
+        if (sizes.size > 1)
+          warnings.push(`${where}: as fotos do giro 360° têm tamanhos diferentes (${[...sizes].join(", ")}); o produto pode "pular" ao girar.`);
+      }
+    }
+
     for (const c of p.personalizacoes ?? []) {
       if (c.tipo && !TYPES.includes(c.tipo as CustomizationType))
         errors.push(`${where}: personalização "${c.rotulo}" com tipo inválido. Use: ${TYPES.join(", ")}.`);
@@ -164,11 +219,27 @@ async function main() {
         await tx.productOption.deleteMany({ where: { productId: product.id } });
         await tx.customization.deleteMany({ where: { productId: product.id } });
 
-        const images = (p.imagens ?? []).map((img, i) => {
+        const gallery = (p.imagens ?? []).map((img, i) => {
           const file = typeof img === "string" ? img : img.arquivo;
           const alt = typeof img === "string" ? "" : (img.alt ?? "");
-          return { productId: product.id, url: imageUrl(file), alt: alt || `${p.nome} — foto ${i + 1}`, sortOrder: i };
+          return {
+            productId: product.id,
+            kind: "GALLERY" as ImageKind,
+            url: imageUrl(file),
+            alt: alt || `${p.nome} — foto ${i + 1}`,
+            sortOrder: i,
+          };
         });
+        const frames = spinFrames(p.giro360);
+        if (p.giro360Invertido) frames.reverse();
+        const spin = frames.map((file, i, all) => ({
+          productId: product.id,
+          kind: "SPIN" as ImageKind,
+          url: imageUrl(file),
+          alt: `${p.nome} — ângulo ${Math.round((i * 360) / all.length)}°`,
+          sortOrder: i,
+        }));
+        const images = [...gallery, ...spin];
         if (images.length) await tx.productImage.createMany({ data: images });
 
         for (const [i, v] of (p.variacoes ?? []).entries()) {
@@ -201,7 +272,9 @@ async function main() {
         }));
         if (customizations.length) await tx.customization.createMany({ data: customizations });
 
-        console.log(`✔ ${p.nome} (${p.slug}) — ${images.length} foto(s)`);
+        console.log(
+          `✔ ${p.nome} (${p.slug}) — ${gallery.length} foto(s)${spin.length ? ` + giro 360° com ${spin.length} quadros` : ""}`,
+        );
       },
       { timeout: 30_000, maxWait: 10_000 },
     );

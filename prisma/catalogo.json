@@ -1,3 +1,37 @@
 {
-  "produtos": []
+  "produtos": [
+    {
+      "slug": "caneca-branca-personalizada",
+      "nome": "Caneca branca personalizada",
+      "categoria": "canecas",
+      "preco": 35,
+      "descricao": "Caneca branca personalizada com a arte, a frase ou a foto que você escolher. Conte a sua ideia no campo de personalização ou envie suas inspirações.",
+      "disponivel": true,
+      "destaque": true,
+      "maisVendido": false,
+      "imagens": [
+        {
+          "arquivo": "canecas/caneca-branca-1.webp",
+          "alt": "Caneca branca lisa, vista de lado com a alça à direita"
+        },
+        {
+          "arquivo": "canecas/caneca-branca-2.webp",
+          "alt": "Caneca branca lisa sobre fundo preto"
+        }
+      ],
+      "personalizacoes": [
+        {
+          "rotulo": "Nos conte o que você está pensando",
+          "tipo": "LONG_TEXT",
+          "obrigatorio": true,
+          "maxCaracteres": 500
+        },
+        {
+          "rotulo": "Link de inspirações",
+          "tipo": "IMAGE_LINK",
+          "obrigatorio": false
+        }
+      ]
+    }
+  ]
 }

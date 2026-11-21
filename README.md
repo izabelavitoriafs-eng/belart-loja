@@ -88,11 +88,26 @@ Requisitos: **Node.js 20.9 ou mais recente** e **Git**.
 | `public/belart-logo.png` | Logo usada no site | Sim |
 | `marca/` | Logo em alta resolução, para materiais impressos e redes | Sim |
 
-### Formato e tamanho recomendados
+### Padrão das fotos
 
-- **Formato:** JPG, PNG ou WEBP (o otimizador converte tudo para WEBP).
-- **Tamanho:** **1200×1200 px ou maior**, de preferência **quadrada**. As vitrines mostram as fotos em quadrado.
-- **Fundo:** claro ou neutro, com boa luz e o produto centralizado.
+O otimizador **padroniza** todas as fotos da galeria automaticamente:
+- todas ficam **quadradas, 1600×1600 px**, com o produto inteiro centralizado, sem corte e sem distorção;
+- em **fundo liso** (branco, por exemplo), o produto é reenquadrado para ocupar sempre a mesma área do quadro, com a mesma margem;
+- em **fundo de cenário** (mesa, parede), as laterais são completadas com a própria foto desfocada.
+
+O que o programa **não** consegue fazer é deixar iguais fotos tiradas de jeitos diferentes. Para a loja ficar uniforme, fotografe sempre assim:
+
+| Item | Padrão Belart |
+|---|---|
+| Fundo | **Branco liso** (cartolina ou papel paraná branco fazendo uma curva atrás e embaixo do produto) |
+| Luz | Natural de janela, indireta, ou 2 luzes iguais dos lados; sem flash |
+| Câmera | Celular na **mesma altura** do produto, sempre à mesma distância (de preferência num tripé) |
+| Enquadramento | Produto inteiro, centralizado, com folga em volta; foto quadrada (1:1) ou horizontal |
+| Resolução | **1600×1600 px ou maior** (qualquer celular atual atende) |
+| Fotos por produto | 1) frente (capa), 2) lado com a alça, 3) detalhe da personalização, 4) costas ou em uso |
+| Formato | JPG, PNG ou WEBP (o otimizador converte para WEBP) |
+
+Para forçar um fundo específico: `npm run imagens:otimizar -- --fundo=#ffffff`. Para refazer fotos já otimizadas: `npm run imagens:otimizar -- --forcar`.
 - **Nome do arquivo:** `nome-do-produto-1.jpg`, `nome-do-produto-2.jpg`… (a ordem dos números não importa; quem define a ordem é o `catalogo.json`).
 
 ### Passo a passo para adicionar um produto com fotos
@@ -125,10 +140,43 @@ Requisitos: **Node.js 20.9 ou mais recente** e **Git**.
 
 ### Como as fotos não ficam distorcidas nem pixelizadas
 
-- O otimizador **nunca estica** a foto: mantém a proporção e não amplia fotos pequenas.
-- As vitrines usam `object-cover`: a foto preenche o quadrado e, se não for quadrada, as bordas são **cortadas** (nunca achatadas).
+- O otimizador **nunca estica** a foto: mantém a proporção e enquadra num quadrado completando o fundo.
+- Como todas as fotos saem quadradas, as vitrines e a galeria mostram o produto inteiro, sem cortes.
 - O site (`next/image`) entrega automaticamente o tamanho certo para cada tela, em WEBP ou AVIF, e só carrega as fotos quando elas aparecem na tela.
-- Foto menor que 1000 px no lado menor gera um aviso, porque pode ficar pixelizada em telas grandes.
+- Foto menor que 1000 px no lado menor gera um aviso: ela é ampliada para 1600 px e fica sem nitidez no zoom.
+
+### Visualização 360° (opcional por produto)
+
+O giro 360° é uma **sequência de fotos de verdade** do produto, cada uma com ele um pouco mais girado. O cliente arrasta (mouse ou dedo) e o site troca as fotos. Não é vídeo nem animação.
+
+**Como fotografar:**
+1. Use um **prato giratório** (de bolo ou de fotografia) e marque 24 ou 36 posições iguais (a cada 15° ou 10°).
+2. Câmera ou celular **fixos num tripé**, sempre na mesma altura, distância e zoom.
+3. **Fundo liso e luz constante.** Desligue o flash automático e trave o foco e a exposição.
+4. Gire o produto **no sentido horário (visto de cima)** e tire uma foto em cada posição, começando com a frente do produto voltada para a câmera.
+5. Mínimo de **8 fotos**. O ideal é **24 a 36**: com menos, o giro fica "aos pulos".
+
+**Como cadastrar:**
+1. Coloque as fotos numa pasta terminada em `-360`, numeradas na ordem:
+   `imagens-originais/canecas/caneca-floral-360/01.jpg`, `02.jpg`, … `36.jpg`
+2. Rode `npm run imagens:otimizar`. As fotos vão para `public/produtos/canecas/caneca-floral-360/`.
+3. No `catalogo.json`, acrescente ao produto:
+   ```json
+   "giro360": "canecas/caneca-floral-360"
+   ```
+   Se fotografou girando ao contrário (anti-horário), acrescente também `"giro360Invertido": true`.
+4. Rode `npm run catalogo:importar`.
+
+**Para remover o 360° de um produto:** apague a linha `"giro360"` e rode o importador. **Para substituir:** troque as fotos da pasta e rode o otimizador e o importador.
+
+Quem não tiver `giro360` mostra só a galeria de fotos com zoom.
+
+**Como o cliente vê a galeria:**
+- **Foto principal:** estática. Clicar (ou tocar) abre a tela cheia.
+- **Tela cheia:** zoom de até 3× pelos botões + e − (25% por clique), pela roda do mouse, por pinça no celular ou toque duplo (2×). Dá para arrastar a foto ampliada e deslizar para trocar de foto.
+- **360°:** aparece como miniatura "360°" logo depois da capa, com o aviso "Arraste para girar". O primeiro quadro aparece na hora e os outros são baixados só quando o visualizador entra na tela.
+
+**Página de teste:** com `npm run dev`, abra http://localhost:3000/dev/visualizador para testar a galeria, o zoom e o 360°. Ela usa uma sequência de demonstração gerada por computador e não existe no site publicado.
 
 ### Renovação do cache
 
@@ -160,8 +208,8 @@ O painel vai enviar as fotos para o **Supabase Storage**, otimizadas, e gravar n
 | Etapa | Situação |
 |---|---|
 | 1. Base: projeto, banco, identidade visual, layout, página inicial, categorias, busca, 404 | Concluída |
-| 1.1 Ajustes: logo, desempenho, visual com degradês, fluxo de imagens | Em teste |
-| 2. Catálogo completo: galeria, variações, personalização, relacionados | Pendente |
+| 1.1 Ajustes: logo, desempenho, visual com degradês, fluxo de imagens | Concluída |
+| 2. Página de produto: galeria com zoom, 360°, variações, personalização, relacionados | Em teste |
 | 3. Painel administrativo com login | Pendente |
 | 4. Carrinho e pedido (salvo no banco + WhatsApp) | Pendente |
 | 5. Contato, política de privacidade (LGPD) | Pendente |
