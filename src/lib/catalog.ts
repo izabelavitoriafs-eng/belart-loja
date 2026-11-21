@@ -42,10 +42,36 @@ export type ProductCardData = {
   image: { url: string; alt: string } | null;
 };
 
+export type ProductImageData = { id: string; url: string; alt: string };
+
+export type ProductOptionData = {
+  id: string;
+  name: string;
+  values: { id: string; label: string; priceDelta: number; available: boolean }[];
+};
+
+export type CustomizationData = {
+  id: string;
+  label: string;
+  type: "TEXT" | "LONG_TEXT" | "SELECT" | "IMAGE_LINK";
+  required: boolean;
+  maxLength: number | null;
+  choices: string[];
+  priceDelta: number;
+};
+
 export type ProductDetail = ProductCardData & {
   productionTime: string | null;
-  images: { id: string; url: string; alt: string }[];
+  /** Fotos da galeria, na ordem (a primeira é a capa). */
+  gallery: ProductImageData[];
+  /** Quadros da visualização 360°, na ordem de rotação (vazio se o produto não tiver). */
+  spin: ProductImageData[];
+  options: ProductOptionData[];
+  customizations: CustomizationData[];
 };
+
+/** Mínimo de quadros para ativar a visualização 360°. */
+export const MIN_SPIN_FRAMES = 8;
 
 // ---------- Consultas (cada uma vai ao banco só quando o cache expira) ----------
 
@@ -73,7 +99,12 @@ export const getAllProducts = cached(async (): Promise<ProductCardData[]> => {
       bestseller: true,
       createdAt: true,
       category: { select: { slug: true, name: true } },
-      images: { select: { url: true, alt: true }, orderBy: { sortOrder: "asc" }, take: 1 },
+      images: {
+        where: { kind: "GALLERY" },
+        select: { url: true, alt: true },
+        orderBy: { sortOrder: "asc" },
+        take: 1,
+      },
     },
   });
   return rows.map(({ images, price, createdAt, ...rest }) => ({
@@ -90,10 +121,18 @@ export const getProductBySlug = (slug: string) =>
       where: { slug, category: { active: true } },
       include: {
         category: { select: { slug: true, name: true } },
-        images: { orderBy: { sortOrder: "asc" }, select: { id: true, url: true, alt: true } },
+        images: { orderBy: { sortOrder: "asc" }, select: { id: true, url: true, alt: true, kind: true } },
+        options: {
+          orderBy: { sortOrder: "asc" },
+          include: { values: { orderBy: { sortOrder: "asc" } } },
+        },
+        customizations: { orderBy: { sortOrder: "asc" } },
       },
     });
     if (!p) return null;
+    const strip = ({ id, url, alt }: ProductImageData) => ({ id, url, alt });
+    const gallery = p.images.filter((i) => i.kind === "GALLERY").map(strip);
+    const spin = p.images.filter((i) => i.kind === "SPIN").map(strip);
     return {
       id: p.id,
       slug: p.slug,
@@ -105,11 +144,39 @@ export const getProductBySlug = (slug: string) =>
       bestseller: p.bestseller,
       createdAt: p.createdAt.toISOString(),
       category: p.category,
-      image: p.images[0] ? { url: p.images[0].url, alt: p.images[0].alt } : null,
+      image: gallery[0] ? { url: gallery[0].url, alt: gallery[0].alt } : null,
       productionTime: p.productionTime,
-      images: p.images,
+      gallery,
+      spin: spin.length >= MIN_SPIN_FRAMES ? spin : [],
+      options: p.options.map((o) => ({
+        id: o.id,
+        name: o.name,
+        values: o.values.map((v) => ({
+          id: v.id,
+          label: v.label,
+          priceDelta: Number(v.priceDelta),
+          available: v.available,
+        })),
+      })),
+      customizations: p.customizations.map((c) => ({
+        id: c.id,
+        label: c.label,
+        type: c.type,
+        required: c.required,
+        maxLength: c.maxLength,
+        choices: c.choices,
+        priceDelta: Number(c.priceDelta),
+      })),
     };
   }, `produto:${slug}`)();
+
+/** Produtos da mesma categoria (completa com outras categorias se faltar). */
+export async function getRelatedProducts(product: { id: string; category: { slug: string } }, limit = 4) {
+  const all = (await getAllProducts()).filter((p) => p.id !== product.id && p.available);
+  const same = all.filter((p) => p.category.slug === product.category.slug);
+  const others = all.filter((p) => p.category.slug !== product.category.slug);
+  return [...same, ...others].slice(0, limit);
+}
 
 export const getTestimonials = cached(async () => {
   return prisma.testimonial.findMany({

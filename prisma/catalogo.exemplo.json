@@ -11,18 +11,38 @@
       "maisVendido": false,
       "prazoProducao": "3 a 5 dias úteis",
       "imagens": [
-        { "arquivo": "canecas/caneca-exemplo-1.webp", "alt": "Caneca branca com nome em roxo, vista de frente" },
+        {
+          "arquivo": "canecas/caneca-exemplo-1.webp",
+          "alt": "Caneca branca com nome em roxo, vista de frente"
+        },
         "canecas/caneca-exemplo-2.webp"
       ],
+      "giro360": "canecas/caneca-exemplo-360",
       "variacoes": [
         {
           "nome": "Cor",
-          "opcoes": [{ "valor": "Branca" }, { "valor": "Preta", "acrescimo": 5 }]
+          "opcoes": [
+            {
+              "valor": "Branca"
+            },
+            {
+              "valor": "Preta",
+              "acrescimo": 5
+            }
+          ]
         }
       ],
       "personalizacoes": [
-        { "rotulo": "Nome a ser impresso", "tipo": "TEXT", "obrigatorio": true, "maxCaracteres": 20 },
-        { "rotulo": "Descreva a arte ou envie o link da imagem", "tipo": "LONG_TEXT" }
+        {
+          "rotulo": "Nome a ser impresso",
+          "tipo": "TEXT",
+          "obrigatorio": true,
+          "maxCaracteres": 20
+        },
+        {
+          "rotulo": "Descreva a arte ou envie o link da imagem",
+          "tipo": "LONG_TEXT"
+        }
       ]
     }
   ]
