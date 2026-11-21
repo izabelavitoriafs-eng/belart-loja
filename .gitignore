@@ -1,0 +1,28 @@
+# dependências
+/node_modules
+
+# build do Next.js
+/.next/
+/out/
+/build
+next-env.d.ts
+*.tsbuildinfo
+
+# variáveis de ambiente — NUNCA enviar ao GitHub
+.env
+.env*.local
+.env.development
+.env.production
+
+# logs e sistema
+npm-debug.log*
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Vercel
+.vercel
+
+# fotos originais (grandes) — o site usa as versões otimizadas em public/produtos
+/imagens-originais/*
+!/imagens-originais/LEIA-ME.txt

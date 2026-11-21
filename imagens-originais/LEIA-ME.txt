@@ -1,0 +1,10 @@
+Coloque aqui as fotos ORIGINAIS dos produtos, separadas por categoria:
+
+  imagens-originais/canecas/caneca-floral-1.jpg
+  imagens-originais/canecas/caneca-floral-2.jpg
+  imagens-originais/garrafas/garrafa-termica-1.jpg
+
+Depois rode no terminal:  npm run imagens:otimizar
+
+As versões leves (WEBP) serão criadas em public/produtos/<categoria>/.
+Esta pasta não vai para o GitHub (só as versões otimizadas vão).
