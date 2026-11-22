@@ -2,13 +2,13 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import { LoginForm } from "@/components/admin/login-form";
-import { getAdminUser } from "@/lib/auth";
+import { getAdminUser, isAuthConfigured } from "@/lib/auth";
 
 export const metadata: Metadata = { title: "Entrar no painel", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
 
 export default async function LoginPage() {
-  const configured = !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  const configured = isAuthConfigured();
   if (configured && (await getAdminUser())) redirect("/admin/produtos");
 
   return (

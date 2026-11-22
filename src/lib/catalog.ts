@@ -121,8 +121,7 @@ export const getAllProducts = cached(async (): Promise<ProductCardData[]> => {
   }));
 }, "produtos-todos");
 
-export const getProductBySlug = (slug: string) =>
-  cached(async (): Promise<ProductDetail | null> => {
+async function loadProduct(slug: string): Promise<ProductDetail | null> {
     const p = await prisma.product.findFirst({
       where: { slug, category: { active: true } },
       include: {
@@ -175,7 +174,17 @@ export const getProductBySlug = (slug: string) =>
         priceDelta: Number(c.priceDelta),
       })),
     };
-  }, `produto:${slug}`)();
+}
+
+/**
+ * Produto pelo endereço, com cache. Quando o produto não existe, a resposta
+ * "não encontrado" NÃO fica no cache: assim um produto recém-cadastrado aparece
+ * na hora, sem mostrar "Página não encontrada".
+ */
+export async function getProductBySlug(slug: string) {
+  const fromCache = await cached(() => loadProduct(slug), `produto:${slug}`)();
+  return fromCache ?? loadProduct(slug);
+}
 
 /** Produtos da mesma categoria (completa com outras categorias se faltar). */
 export async function getRelatedProducts(product: { id: string; category: { slug: string } }, limit = 4) {

@@ -14,8 +14,14 @@ export function isAdminEmail(email: string | null | undefined) {
   return !!email && adminEmails().includes(email.toLowerCase());
 }
 
-/** Usuário logado e autorizado, ou null. */
+/** As chaves do Supabase estão no .env? */
+export function isAuthConfigured() {
+  return !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+}
+
+/** Usuário logado e autorizado, ou null (também null se o login ainda não foi configurado). */
 export async function getAdminUser() {
+  if (!isAuthConfigured()) return null;
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },

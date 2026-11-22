@@ -9,7 +9,15 @@ export async function middleware(request: NextRequest) {
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-  if (!url || !key) return response; // Supabase não configurado: as páginas mostram o aviso
+  const isLoginPage = request.nextUrl.pathname.startsWith("/admin/entrar");
+  if (!url || !key) {
+    // Login ainda não configurado: leva para /admin/entrar, que mostra o aviso
+    if (isLoginPage) return response;
+    const login = request.nextUrl.clone();
+    login.pathname = "/admin/entrar";
+    login.search = "";
+    return NextResponse.redirect(login);
+  }
 
   const supabase = createServerClient(url, key, {
     cookies: {
@@ -28,7 +36,6 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isLoginPage = request.nextUrl.pathname.startsWith("/admin/entrar");
   if (!user && !isLoginPage) {
     const login = request.nextUrl.clone();
     login.pathname = "/admin/entrar";
