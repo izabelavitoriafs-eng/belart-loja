@@ -33,6 +33,164 @@
           "obrigatorio": false
         }
       ]
+    },
+    {
+      "slug": "garrafa-personalizada",
+      "nome": "Garrafa personalizada",
+      "categoria": "garrafas",
+      "preco": 20,
+      "descricao": "Garrafa personalizada com a arte, a frase ou a foto que você escolher. Conte a sua ideia no campo de personalização ou envie suas inspirações.",
+      "disponivel": true,
+      "destaque": true,
+      "maisVendido": false,
+      "modelo3d": "garrafa",
+      "imagens": [
+        {
+          "arquivo": "garrafas/garrafa-personalizada-1.webp",
+          "alt": "Garrafas com tampa em várias cores, com degradê na parte de baixo"
+        }
+      ],
+      "personalizacoes": [
+        {
+          "rotulo": "Nos conte o que você está pensando",
+          "tipo": "LONG_TEXT",
+          "obrigatorio": true,
+          "maxCaracteres": 500
+        },
+        {
+          "rotulo": "Link de inspirações",
+          "tipo": "IMAGE_LINK",
+          "obrigatorio": false
+        }
+      ]
+    },
+    {
+      "slug": "azulejo-personalizado-20x20",
+      "nome": "Azulejo personalizado 20×20 cm",
+      "categoria": "azulejos",
+      "preco": 45,
+      "descricao": "Azulejo de 20×20 cm personalizado com a arte, a frase ou a foto que você escolher. Conte a sua ideia no campo de personalização ou envie suas inspirações.",
+      "disponivel": true,
+      "destaque": true,
+      "maisVendido": false,
+      "modelo3d": "azulejo",
+      "imagens": [
+        {
+          "arquivo": "azulejos/azulejo-20x20-1.webp",
+          "alt": "Azulejo branco 20×20 cm em pé no suporte preto"
+        },
+        {
+          "arquivo": "azulejos/azulejo-20x20-2.webp",
+          "alt": "Exemplo de azulejo personalizado com o texto Sua marca aqui"
+        }
+      ],
+      "personalizacoes": [
+        {
+          "rotulo": "Nos conte o que você está pensando",
+          "tipo": "LONG_TEXT",
+          "obrigatorio": true,
+          "maxCaracteres": 500
+        },
+        {
+          "rotulo": "Link de inspirações",
+          "tipo": "IMAGE_LINK",
+          "obrigatorio": false
+        }
+      ]
+    },
+    {
+      "slug": "xicara-personalizada",
+      "nome": "Xícara personalizada",
+      "categoria": "xicaras",
+      "preco": 25,
+      "descricao": "Xícara personalizada com a arte, a frase ou a foto que você escolher. Conte a sua ideia no campo de personalização ou envie suas inspirações.",
+      "disponivel": true,
+      "destaque": true,
+      "maisVendido": false,
+      "modelo3d": "xicara",
+      "imagens": [
+        {
+          "arquivo": "xicaras/xicara-personalizada-2.webp",
+          "alt": "Xícara branca lisa, vista de lado com a alça à esquerda"
+        },
+        {
+          "arquivo": "xicaras/xicara-personalizada-1.webp",
+          "alt": "Xícaras brancas empilhadas no suporte de metal"
+        }
+      ],
+      "personalizacoes": [
+        {
+          "rotulo": "Nos conte o que você está pensando",
+          "tipo": "LONG_TEXT",
+          "obrigatorio": true,
+          "maxCaracteres": 500
+        },
+        {
+          "rotulo": "Link de inspirações",
+          "tipo": "IMAGE_LINK",
+          "obrigatorio": false
+        }
+      ]
+    },
+    {
+      "slug": "taca-personalizada",
+      "nome": "Taça personalizada",
+      "categoria": "tacas",
+      "preco": 8,
+      "descricao": "Taça personalizada com a arte, a frase ou a foto que você escolher. Conte a sua ideia no campo de personalização ou envie suas inspirações.",
+      "disponivel": true,
+      "destaque": true,
+      "maisVendido": false,
+      "modelo3d": "taca",
+      "imagens": [
+        {
+          "arquivo": "tacas/taca-personalizada-1.webp",
+          "alt": "Taça de gin branca"
+        }
+      ],
+      "personalizacoes": [
+        {
+          "rotulo": "Nos conte o que você está pensando",
+          "tipo": "LONG_TEXT",
+          "obrigatorio": true,
+          "maxCaracteres": 500
+        },
+        {
+          "rotulo": "Link de inspirações",
+          "tipo": "IMAGE_LINK",
+          "obrigatorio": false
+        }
+      ]
+    },
+    {
+      "slug": "blusa-personalizada",
+      "nome": "Blusa personalizada",
+      "categoria": "blusas",
+      "preco": 25,
+      "descricao": "Blusa personalizada com a estampa, a frase ou a foto que você escolher. Conte a sua ideia no campo de personalização ou envie suas inspirações.",
+      "disponivel": true,
+      "destaque": true,
+      "maisVendido": false,
+      "modelo3d": "blusa",
+      "imagens": [
+        {
+          "arquivo": "blusas/blusa-personalizada-1.webp",
+          "alt": "Blusa branca de manga curta, vista de frente"
+        }
+      ],
+      "personalizacoes": [
+        {
+          "rotulo": "Nos conte o que você está pensando",
+          "tipo": "LONG_TEXT",
+          "obrigatorio": true,
+          "maxCaracteres": 500
+        },
+        {
+          "rotulo": "Link de inspirações",
+          "tipo": "IMAGE_LINK",
+          "obrigatorio": false
+        }
+      ]
     }
   ]
 }

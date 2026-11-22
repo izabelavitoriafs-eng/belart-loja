@@ -5,7 +5,8 @@ import { site } from "@/config/site";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { WhatsAppButton } from "@/components/whatsapp-button";
-import { getActiveCategories } from "@/lib/catalog";
+import { getActiveCategories, getStoreSettings } from "@/lib/catalog";
+import { ChromeGate } from "@/components/chrome-gate";
 
 const bricolage = Bricolage_Grotesque({
   subsets: ["latin"],
@@ -39,7 +40,7 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const categories = await getActiveCategories();
+  const [categories, settings] = await Promise.all([getActiveCategories(), getStoreSettings()]);
   const nav = categories.map(({ slug, name }) => ({ slug, name }));
 
   return (
@@ -51,12 +52,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         >
           Pular para o conteúdo
         </a>
-        <Header categories={nav} />
+        <ChromeGate>
+          <Header categories={nav} />
+        </ChromeGate>
         <main id="conteudo" className="flex-1">
           {children}
         </main>
-        <Footer categories={nav} />
-        <WhatsAppButton />
+        <ChromeGate>
+          <Footer categories={nav} settings={settings} />
+          <WhatsAppButton />
+        </ChromeGate>
       </body>
     </html>
   );

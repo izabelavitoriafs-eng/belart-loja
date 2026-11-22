@@ -2,10 +2,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { site, whatsappLink } from "@/config/site";
 import { InstagramIcon, WhatsAppIcon } from "@/components/brand-icons";
+import type { StoreSettings } from "@/lib/catalog";
 
 type NavCategory = { slug: string; name: string };
 
-export function Footer({ categories }: { categories: NavCategory[] }) {
+export function Footer({ categories, settings }: { categories: NavCategory[]; settings: StoreSettings }) {
   const year = new Date().getFullYear();
 
   return (
@@ -63,7 +64,15 @@ export function Footer({ categories }: { categories: NavCategory[] }) {
                 Instagram {site.instagramHandle}
               </a>
             </li>
-            <li className="text-lilas-200">Segunda a sexta</li>
+            {settings.email && (
+              <li>
+                <a href={`mailto:${settings.email}`} className="hover:text-sol-400">
+                  {settings.email}
+                </a>
+              </li>
+            )}
+            <li className="text-lilas-200">{settings.horario || "Segunda a sexta"}</li>
+            {settings.retirada && <li className="text-lilas-200">Retirada: {settings.retirada}</li>}
           </ul>
         </div>
       </div>

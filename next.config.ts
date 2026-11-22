@@ -8,6 +8,10 @@ const supabaseHost = process.env.NEXT_PUBLIC_SUPABASE_URL
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  experimental: {
+    // Envio de fotos pelo painel (as fotos já são reduzidas no navegador antes do envio)
+    serverActions: { bodySizeLimit: "12mb" },
+  },
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: supabaseHost

@@ -8,6 +8,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductGallery } from "@/components/product-gallery";
 import { ProductPurchase } from "@/components/product-purchase";
+import { isModel3D } from "@/lib/models-3d";
 
 export const metadata: Metadata = { title: "Teste do visualizador", robots: { index: false, follow: false } };
 
@@ -23,8 +24,13 @@ const spin = Array.from({ length: 36 }, (_, i) => ({
   alt: `Ângulo ${i * 10}°`,
 }));
 
-export default function VisualizadorTeste() {
+type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
+
+// Para testar outro modelo 3D: /dev/visualizador?modelo=taca (caneca, xicara, garrafa, taca, azulejo, blusa)
+export default async function VisualizadorTeste({ searchParams }: Props) {
   if (process.env.NODE_ENV === "production") notFound();
+  const { modelo } = await searchParams;
+  const model3d = typeof modelo === "string" && isModel3D(modelo) ? modelo : "caneca";
 
   return (
     <div className="container-loja py-10">
@@ -34,7 +40,7 @@ export default function VisualizadorTeste() {
       </p>
 
       <div className="mt-8 grid gap-10 md:grid-cols-2 md:gap-12">
-        <ProductGallery name="Caneca branca personalizada" gallery={gallery} spin={spin} model3d="caneca" />
+        <ProductGallery name="Caneca branca personalizada" gallery={gallery} spin={spin} model3d={model3d} />
 
         <div>
           <h1 className="text-4xl font-extrabold text-ameixa-900">Caneca branca personalizada</h1>

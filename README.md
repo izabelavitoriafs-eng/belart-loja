@@ -76,6 +76,37 @@ Requisitos: **Node.js 20.9 ou mais recente** e **Git**.
 | `npm run db:studio` | Abre um visualizador do banco no navegador |
 | `npm run imagens:otimizar` | Converte as fotos de `imagens-originais/` em WEBP leves em `public/produtos/` |
 | `npm run catalogo:importar` | Grava no banco os produtos de `prisma/catalogo.json` |
+| `npm run admin:criar` | Cria o acesso ao painel ou troca a senha |
+
+## Painel administrativo
+
+Endereço: **/admin** (no computador: http://localhost:3000/admin). Só entram os e-mails listados em `ADMIN_EMAILS` no `.env`.
+
+### Configuração (uma vez)
+
+1. No Supabase, em **Project Settings → API Keys** (ou **API**), copie para o `.env`:
+   - **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
+   - chave **publishable** (ou `anon public`) → `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+   - chave **secret** (ou `service_role`) → `SUPABASE_SECRET_KEY` (secreta: nunca compartilhe nem envie ao GitHub)
+2. No Supabase, em **Authentication → Sign In / Providers**, desative **"Allow new users to sign up"**. Assim ninguém cria conta sozinho; o acesso é criado só pelo comando abaixo.
+3. Crie a sua senha do painel:
+   ```bash
+   npm run admin:criar
+   ```
+   A senha é digitada no terminal e não aparece na tela. Para **trocar a senha** (ou se esquecer), rode o mesmo comando de novo.
+4. Reinicie o site (`npm run dev`) e entre em `/admin`.
+
+### O que dá para fazer
+
+- **Produtos:** cadastrar, editar, excluir, alterar preço e descrição, marcar como indisponível, destacar na página inicial, marcar como mais vendido e ativar a visualização 3D.
+- **Fotos:** enviar várias de uma vez, reordenar (a primeira é a capa), substituir, excluir e editar a descrição. Cada foto é padronizada automaticamente, igual ao script `imagens:otimizar`. A sequência do **giro 360°** também pode ser enviada pelo painel.
+- **Variações** (cor, tamanho, capacidade…) com acréscimo de preço e disponibilidade, e **campos de personalização**.
+- **Categorias:** criar, renomear, reordenar o menu, esconder da loja e excluir (quando não houver produtos nela).
+- **Dados da loja:** e-mail, horário, retirada e regra da entrega por Uber.
+
+Tudo o que é salvo no painel aparece **na hora** na loja.
+
+As fotos enviadas pelo painel ficam no **Supabase Storage** (bucket público `produtos`, criado automaticamente no primeiro envio). As fotos já cadastradas pelo VS Code (`public/produtos`) continuam funcionando, e o importador (`catalogo:importar`) continua disponível. Atenção: o importador **substitui** as fotos, variações e personalizações dos produtos que estão no `catalogo.json`. Depois de começar a usar o painel, prefira editar por lá.
 
 ## Imagens dos produtos
 
@@ -184,7 +215,7 @@ A visualização 3D é um **modelo tridimensional** do produto, desenhado no nav
 
 - **Para ativar num produto:** acrescente `"modelo3d": "caneca"` no `catalogo.json` e rode `npm run catalogo:importar`.
 - **Para desativar:** apague a linha e rode o importador.
-- **Modelos disponíveis hoje:** `caneca` (caneca branca de cerâmica, ~325 ml). Xícara, taça, garrafa e azulejo podem ser acrescentados em `src/components/model-3d-viewer.tsx`.
+- **Modelos disponíveis:** `caneca`, `xicara`, `garrafa`, `taca`, `azulejo` (20×20 com suporte) e `blusa`. No painel, escolha em "Visualização 3D". Novos modelos podem ser acrescentados em `src/components/model-3d-viewer.tsx` e `src/lib/models-3d.ts`.
 - **Desempenho:** a biblioteca 3D só é baixada quando o cliente toca na miniatura "3D". A animação pausa quando o visualizador sai da tela.
 - **Navegador sem suporte a 3D** (raro): aparece uma mensagem e as fotos continuam funcionando.
 - **Arte do cliente aplicada no 3D:** etapa futura, separada.
@@ -220,8 +251,8 @@ O painel vai enviar as fotos para o **Supabase Storage**, otimizadas, e gravar n
 |---|---|
 | 1. Base: projeto, banco, identidade visual, layout, página inicial, categorias, busca, 404 | Concluída |
 | 1.1 Ajustes: logo, desempenho, visual com degradês, fluxo de imagens | Concluída |
-| 2. Página de produto: galeria com zoom, 360°, variações, personalização, relacionados | Em teste |
-| 3. Painel administrativo com login | Pendente |
+| 2. Página de produto: galeria com zoom, 3D, 360°, variações, personalização, relacionados | Concluída |
+| 3. Painel administrativo com login | Em teste |
 | 4. Carrinho e pedido (salvo no banco + WhatsApp) | Pendente |
 | 5. Contato, política de privacidade (LGPD) | Pendente |
 | 6. Publicação na Vercel e revisão final | Pendente |

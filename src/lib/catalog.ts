@@ -9,8 +9,10 @@
 // chamando revalidateTag(CATALOG_TAG) — veja src/app/api/revalidar/route.ts.
 import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { isModel3D, type Model3D } from "@/lib/models-3d";
 
 export const CATALOG_TAG = "catalogo";
+export const SETTINGS_TAG = "configuracoes";
 
 // Em desenvolvimento o cache expira rápido para facilitar os testes;
 // em produção, a renovação acontece por revalidateTag (e a cada 10 min por segurança).
@@ -60,9 +62,7 @@ export type CustomizationData = {
   priceDelta: number;
 };
 
-/** Modelos 3D disponíveis (veja src/components/model-3d-viewer.tsx). */
-export const MODELOS_3D = ["caneca"] as const;
-export type Model3D = (typeof MODELOS_3D)[number];
+export { MODELOS_3D, type Model3D } from "@/lib/models-3d";
 
 export type ProductDetail = ProductCardData & {
   productionTime: string | null;
@@ -152,7 +152,7 @@ export const getProductBySlug = (slug: string) =>
       category: p.category,
       image: gallery[0] ? { url: gallery[0].url, alt: gallery[0].alt } : null,
       productionTime: p.productionTime,
-      model3d: (MODELOS_3D as readonly string[]).includes(p.model3d ?? "") ? (p.model3d as Model3D) : null,
+      model3d: isModel3D(p.model3d) ? p.model3d : null,
       gallery,
       spin: spin.length >= MIN_SPIN_FRAMES ? spin : [],
       options: p.options.map((o) => ({
@@ -193,6 +193,21 @@ export const getTestimonials = cached(async () => {
     select: { id: true, name: true, text: true },
   });
 }, "depoimentos");
+
+// ---------- Dados da loja (editáveis no painel → Configurações) ----------
+
+export const STORE_SETTING_KEYS = ["email", "horario", "retirada", "entregaUber"] as const;
+export type StoreSettings = Record<(typeof STORE_SETTING_KEYS)[number], string>;
+
+export const getStoreSettings = unstable_cache(
+  async (): Promise<StoreSettings> => {
+    const rows = await prisma.storeSetting.findMany({ where: { key: { in: [...STORE_SETTING_KEYS] } } });
+    const map = Object.fromEntries(rows.map((r) => [r.key, r.value]));
+    return Object.fromEntries(STORE_SETTING_KEYS.map((k) => [k, map[k] ?? ""])) as StoreSettings;
+  },
+  ["configuracoes-loja"],
+  { tags: [SETTINGS_TAG], revalidate: REVALIDATE_SECONDS },
+);
 
 // ---------- Ajudantes em memória (sem ir ao banco) ----------
 
